@@ -116,15 +116,17 @@ strcat_s (char *restrict dest, rsize_t dmax, const char *restrict src)
                 len = dmax;
             if (len > RSIZE_MAX_STR)
                 len = RSIZE_MAX_STR;
-            sprintf(msg, "%s: dmax %ld exceeds dest %ld",
-                    "strcat_s", dmax, BOS(dest));
+            if (HAS_SAFE_STR_CONSTRAINT_HANDLER)
+                sprintf(msg, "%s: dmax %ld exceeds dest %ld",
+                        "strcat_s", dmax, BOS(dest));
             handle_error(dest, len, msg, ESLEMAX);
             return RCNEGATE(ESLEMAX);
         }
 #ifdef HAVE_WARN_DMAX
         else if (_BOS_CHK_N(dest,dmax)) {
-            sprintf(msg, "%s: wrong dmax %ld, dest has size %ld",
-                    "strcat_s", dmax, BOS(dest));
+            if (HAS_SAFE_STR_CONSTRAINT_HANDLER)
+                sprintf(msg, "%s: wrong dmax %ld, dest has size %ld",
+                        "strcat_s", dmax, BOS(dest));
             invoke_safe_str_constraint_handler(msg, dest, ESLEWRNG);
 # ifdef HAVE_ERROR_DMAX
             return RCNEGATE(ESLEWRNG);
@@ -147,27 +149,30 @@ strcat_s (char *restrict dest, rsize_t dmax, const char *restrict src)
         while (*dest != '\0') {
 
             if (unlikely(dest == overlap_bumper)) {
-                handle_error(orig_dest, orig_dmax, "strcat_s: "
-                             "overlapping objects",
-                             ESOVRLP);
+                if (HAS_SAFE_STR_CONSTRAINT_HANDLER)
+                    sprintf(msg, "%s: overlapping objects, at %ld", __FUNCTION__,
+                            dest - orig_dest);
+                handle_error(orig_dest, orig_dmax, msg, ESOVRLP);
                 return RCNEGATE(ESOVRLP);
             }
 
             dest++;
             dmax--;
             if (unlikely(dmax == 0)) {
-                handle_error(orig_dest, orig_dmax, "strcat_s: "
-                             "dest unterminated",
-                             ESUNTERM);
+                if (HAS_SAFE_STR_CONSTRAINT_HANDLER)
+                    sprintf(msg, "%s: dest unterminated, at %ld", __FUNCTION__,
+                            dest - orig_dest);
+                handle_error(orig_dest, orig_dmax, msg, ESUNTERM);
                 return RCNEGATE(ESUNTERM);
             }
         }
 
         while (dmax > 0) {
             if (unlikely(dest == overlap_bumper)) {
-                handle_error(orig_dest, orig_dmax, "strcat_s: "
-                             "overlapping objects",
-                             ESOVRLP);
+                if (HAS_SAFE_STR_CONSTRAINT_HANDLER)
+                    sprintf(msg, "%s: overlapping objects, at %ld", __FUNCTION__,
+                            dest - orig_dest);
+                handle_error(orig_dest, orig_dmax, msg, ESOVRLP);
                 return RCNEGATE(ESOVRLP);
             }
 
@@ -202,18 +207,20 @@ strcat_s (char *restrict dest, rsize_t dmax, const char *restrict src)
             dest++;
             dmax--;
             if (unlikely(dmax == 0)) {
-                handle_error(orig_dest, orig_dmax, "strcat_s: "
-                             "dest unterminated",
-                             ESUNTERM);
+                if (HAS_SAFE_STR_CONSTRAINT_HANDLER)
+                    sprintf(msg, "%s: dest unterminated, at %ld", __FUNCTION__,
+                            dest - orig_dest);
+                handle_error(orig_dest, orig_dmax, msg, ESUNTERM);
                 return RCNEGATE(ESUNTERM);
             }
         }
 
         while (dmax > 0) {
             if (unlikely(src == overlap_bumper)) {
-                handle_error(orig_dest, orig_dmax, "strcat_s: "
-                             "overlapping objects",
-                             ESOVRLP);
+                if (HAS_SAFE_STR_CONSTRAINT_HANDLER)
+                    sprintf(msg, "%s: overlapping objects, at %ld", __FUNCTION__,
+                            dest - orig_dest);
+                handle_error(orig_dest, orig_dmax, msg, ESOVRLP);
                 return RCNEGATE(ESOVRLP);
             }
 
@@ -239,10 +246,10 @@ strcat_s (char *restrict dest, rsize_t dmax, const char *restrict src)
     /*
      * the entire src was not copied, so null the string
      */
-    handle_error(orig_dest, orig_dmax, "strcat_s: not enough "
-                      "space for src",
-                      ESNOSPC);
-
+    if (HAS_SAFE_STR_CONSTRAINT_HANDLER)
+        sprintf(msg, "%s: not enough space for src, left %ld", __FUNCTION__,
+                orig_dmax-dmax);
+    handle_error(orig_dest, orig_dmax, msg, ESNOSPC);
     return RCNEGATE(ESNOSPC);
 }
 #ifdef __KERNEL__

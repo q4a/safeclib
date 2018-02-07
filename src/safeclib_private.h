@@ -226,7 +226,10 @@ void abort(void) __attribute__((noreturn));
     }
 #define CHK_DMAX_MAX(func, max)                                         \
     if (unlikely(dmax > (max))) {                                       \
-        invoke_safe_str_constraint_handler(func ": dmax exceeds max", dest, ESLEMAX); \
+        if (HAS_SAFE_STR_CONSTRAINT_HANDLER)                            \
+            sprintf(msg, "%s: dmax %ld exceeds max %ld", func,          \
+                    dmax, RSIZE_MAX_STR);                               \
+        invoke_safe_str_constraint_handler(msg, dest, ESLEMAX);         \
         return RCNEGATE(ESLEMAX);                                       \
     }
 #define CHK_SRC_NULL(func, src)                                         \
@@ -246,8 +249,17 @@ void abort(void) __attribute__((noreturn));
     }
 #define CHK_SLEN_MAX_CLEAR(func, max)                                   \
     if (unlikely(slen > RSIZE_MAX_STR)) {                               \
-        handle_error(dest, strnlen_s(dest, dmax), func ": slen exceeds max", ESLEMAX); \
+        if (HAS_SAFE_STR_CONSTRAINT_HANDLER)                            \
+            sprintf(msg, "%s: slen %ld exceeds max %ld", func,          \
+                    slen, RSIZE_MAX_STR);                               \
+        handle_error(dest, strnlen_s(dest, dmax), msg, ESLEMAX);        \
         return RCNEGATE(ESLEMAX);                                       \
+    }
+#define CHK_SLEN_ZERO_CLEAR(func)                                       \
+    if (unlikely(slen == 0)) {                                          \
+        errno_t error = (strnlen_s(dest, dmax) < dmax) ? EOK : ESZEROL; \
+        handle_error(dest, strnlen_s(dest, dmax), func ": slen is 0", error); \
+        return RCNEGATE(error);                                         \
     }
 
 /* platform quirks */

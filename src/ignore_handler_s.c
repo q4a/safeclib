@@ -62,7 +62,7 @@ ignore_handler_s(const char * restrict msg, void * restrict ptr, errno_t error)
 	(void)error;
 #endif
 	sldebug_printf("IGNORE CONSTRAINT HANDLER: (%d) %s\n", (int)error,
-		       (msg) ? msg : "Null message");
+		       (msg) ? msg : "");
 	return;
 }
 #ifdef __KERNEL__

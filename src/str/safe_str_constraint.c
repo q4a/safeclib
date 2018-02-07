@@ -35,6 +35,7 @@
 #include "safeclib_private.h"
 #endif
 
+bool has_safe_str_constraint_handler = false;
 static constraint_handler_t str_handler = NULL;
 
 /**
@@ -76,8 +77,10 @@ set_str_constraint_handler_s (constraint_handler_t handler)
 {
     constraint_handler_t prev_handler = str_handler;
     if (NULL == handler) {
-        str_handler = sl_default_handler;
+        has_safe_str_constraint_handler = false;
+        str_handler = sl_default_handler; /* the ignore handler */
     } else {
+        has_safe_str_constraint_handler = true;
         str_handler = handler;
     }
     return prev_handler;

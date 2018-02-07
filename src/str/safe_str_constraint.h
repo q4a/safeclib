@@ -38,6 +38,8 @@
 #include "safeclib_private.h"
 #endif
 
+/* Without a handler we can skip the err-msg string processing */
+EXTERN bool has_safe_str_constraint_handler;
 /*
  * Function used by the libraries to invoke the registered
  * runtime-constraint handler. Always needed.
@@ -47,25 +49,34 @@ EXTERN void invoke_safe_str_constraint_handler(
                            void *ptr,
                            errno_t error);
 
+/* has_safe_str_constraint_handler check mandatory on DEBUG */
+#ifndef DEBUG
+# define HAS_SAFE_STR_CONSTRAINT_HANDLER has_safe_str_constraint_handler
+#else
+# define HAS_SAFE_STR_CONSTRAINT_HANDLER 1
+#endif
 /*
  * Safe C Lib internal string routine to consolidate error handling.
  * With SAFECLIB_STR_NULL_SLACK clear the dest buffer to eliminate
  * partial copy.
  */
 static inline void
-handle_error(char *orig_dest, rsize_t orig_dmax,
+handle_error(char *dest, rsize_t dmax,
              const char *err_msg, errno_t err_code)
 {
 #ifdef SAFECLIB_STR_NULL_SLACK
     /* null string to eliminate partial copy */
-    memset(orig_dest, 0, orig_dmax);
-    /*while (orig_dmax) { *orig_dest = '\0'; orig_dmax--; orig_dest++; }*/
+    if (dmax > 0x20)
+        memset(dest, 0, dmax);
+    else {
+        while (dmax) { *dest = '\0'; dmax--; dest++; }
+    }
 #else
-    (void)orig_dmax;
-    *orig_dest = '\0';
+    (void)dmax;
+    *dest = '\0';
 #endif
 
-    invoke_safe_str_constraint_handler(err_msg, NULL, err_code);
+    invoke_safe_str_constraint_handler(err_msg, dest, err_code);
     return;
 }
 
@@ -76,19 +87,21 @@ handle_error(char *orig_dest, rsize_t orig_dmax,
  * partial copy.
  */
 static inline void
-handle_werror(wchar_t *orig_dest, rsize_t orig_dmax,
+handle_werror(wchar_t *dest, rsize_t dmax,
               const char *err_msg, errno_t err_code)
 {
 #ifdef SAFECLIB_STR_NULL_SLACK
     /* null string to eliminate partial copy */
-    memset(orig_dest, 0, orig_dmax*sizeof(wchar_t));
-    /*while (orig_dmax) { *orig_dest = '\0'; orig_dmax--; orig_dest++; }*/
+    if (dmax > 0x20)
+        memset(dest, 0, dmax*sizeof(wchar_t));
+    else
+        while (dmax) { *dest = L'\0'; dmax--; dest++; }
 #else
-    (void)orig_dmax;
-    *orig_dest = '\0';
+    (void)dmax;
+    *dest = '\0';
 #endif
 
-    invoke_safe_str_constraint_handler(err_msg, NULL, err_code);
+    invoke_safe_str_constraint_handler(err_msg, dest, err_code);
     return;
 }
 #endif
