@@ -105,11 +105,36 @@ strcat_s (char *restrict dest, rsize_t dmax, const char *restrict src)
     rsize_t orig_dmax;
     char *orig_dest;
     const char *overlap_bumper;
+    char msg[128];
 
     if (unlikely(dest == NULL)) {
         invoke_safe_str_constraint_handler("strcat_s: dest is null",
                    NULL, ESNULLP);
         return RCNEGATE(ESNULLP);
+    }
+    /* known dest size */
+    else if (_BOS_KNOWN(dest)) {
+        if (unlikely(_BOS_OVR_N(dest,dmax))) {
+            size_t len = strlen(dest); /* clear the min of strlen, dmax and MAX */
+            if (len > dmax)
+                len = dmax;
+            if (len > RSIZE_MAX_STR)
+                len = RSIZE_MAX_STR;
+            sprintf(msg, "%s: dmax %ld exceeds dest %ld",
+                    "strcat_s", dmax, BOS(dest));
+            handle_error(dest, len, msg, ESLEMAX);
+            return RCNEGATE(ESLEMAX);
+        }
+#ifdef HAVE_WARN_DMAX
+        else if (_BOS_CHK_N(dest,dmax)) {
+            sprintf(msg, "%s: wrong dmax %ld, dest has size %ld",
+                    "strcat_s", dmax, BOS(dest));
+            invoke_safe_str_constraint_handler(msg, dest, ESLEWRNG);
+# ifdef HAVE_ERROR_DMAX
+            return RCNEGATE(ESLEWRNG);
+# endif
+        }
+#endif
     }
     if (unlikely(dmax == 0)) {
         invoke_safe_str_constraint_handler("strcat_s: dmax is 0",
