@@ -7,6 +7,8 @@
  *         memcpy_s.o  952
  *   default:
  *         memcpy_s.o 1908  +100%,  956 bytes
+ *   -march=native
+ *         memcpy_s.o 2176
  *
  *   Speed overhead: 88% --disable-constraint-handler
  *                   88% default
@@ -17,8 +19,10 @@
  *   default:
  *         memcpy_s.o  1564  +66%,  620 bytes
  *
- *   Speed overhead: 51% --disable-constraint-handler
- *                   56% default
+ *   Speed overhead: 50% --disable-constraint-handler
+ *                   56% default (no static_assert)
+ *                   46% default (with static_assert)
+ *                   36% default (-march=native)
  *
  * clang-7         5-20% -march=native --disable-constraint-handler
  * clang-4         5-20% -march=native --disable-constraint-handler
@@ -38,6 +42,7 @@
  * clang-7 -Ofast    -2% 64bit -march=native --disable-constraint-handler
  * clang-7 -O2   -2 - 5% 64bit -march=native --disable-constraint-handler
  * gcc-7             77% 64bit -march=native -Wa,-q --disable-constraint-handler
+ *
  */
 
 #include "test_private.h"

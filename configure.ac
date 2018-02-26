@@ -408,6 +408,15 @@ fi
 if test "$ax_compiler_cxx" = "yes" ; then
   AC_DEFINE([HAVE_CXX], 1,
         [Defined to 1 when the compiler is C++])
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
+    [static_assert(sizeof(int) > 1, "wrong int");]])],
+    [ax_have_static_assert=yes;],
+    [ax_have_static_assert=no;])
+  if test "$ax_have_static_assert" = "yes" ; then
+    AC_DEFINE([HAVE_CXX_STATIC_ASSERT], 1,
+        [Defined to 1 when the C++ compiler has static_assert])
+  fi
+
 dnl   ax_cv_check_cflags__Wnested_externs=no
 dnl   ax_cv_check_cflags__Wmissing_prototypes=no
 dnl   ax_cv_check_cflags__Wstrict_prototypes=no
@@ -721,6 +730,13 @@ if test x$ax_cv_have___builtin_constant_p = xyes; then
   INSERT_CONSTANT_P="#define HAVE___BUILTIN_CONSTANT_P 1"
 fi
 AC_SUBST(INSERT_CONSTANT_P)
+
+AX_GCC_BUILTIN(__builtin_choose_expr)
+INSERT_CHOOSE_EXPR="#undef HAVE___BUILTIN_CHOOSE_EXPR"
+if test x$ax_cv_have___builtin_choose_expr = xyes; then
+  INSERT_CHOOSE_EXPR="#define HAVE___BUILTIN_CHOOSE_EXPR 1"
+fi
+AC_SUBST(INSERT_CHOOSE_EXPR)
 
 builtins_chk="memcpy memmove memset strcpy strncpy strcat strncat
               printf sprintf snprintf swprintf

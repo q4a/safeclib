@@ -1,4 +1,4 @@
-/*
+/**
  * perf_strcpy_s.c
  *
  * gcc-7 darwin:
@@ -44,8 +44,8 @@
 
 #define LEN   ( 1024 )
 
-char str1[LEN];
-char str2[LEN];
+static  char str1[LEN];
+static  char str2[LEN];
 
 static inline clock_t rdtsc();
 static double timing_loop (uint32_t len, uint32_t loops);
@@ -157,7 +157,7 @@ int main(void)
     avg += timing_loop(1024 * 6, 400);
     avg += timing_loop(1024 * 7, 400);
     avg += timing_loop(1024 * 8, 400);
-    printf("avg: %2.2f%%\n", avg/8.0);
+    printf("avg: %2.2f %%\n", avg/8.0);
 
 /*--------------------------------------------------*/
 
@@ -171,7 +171,7 @@ int main(void)
     avg += timing_loop(1024 * 6, 600);
     avg += timing_loop(1024 * 7, 600);
     avg += timing_loop(1024 * 8, 600);
-    printf("avg: %2.2f%%\n", avg/16.0);
+    printf("avg: %2.2f %%\n", avg/16.0);
 
 /*--------------------------------------------------*/
 
