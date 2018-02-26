@@ -103,24 +103,15 @@
  *
  * @see
  *    strncat_s(), strcpy_s(), strncpy_s()
- *
  */
+
+/* already checked at compile-time: BOS_CHK(dest) BOS_NULL(src) */
 EXPORT errno_t
-_strcat_s_chk (char *restrict dest, rsize_t dmax, const char *restrict src, size_t destbos)
+_strcat_s_real (char *restrict dest, rsize_t dmax, const char *restrict src)
 {
     rsize_t orig_dmax;
     char *orig_dest;
     const char *overlap_bumper;
-
-    CHK_DEST_NULL("strcat_s")
-    CHK_DMAX_ZERO("strcat_s")
-    if (destbos == BOS_UNKNOWN) {
-        CHK_DMAX_MAX("strcat_s", RSIZE_MAX_STR)
-        BND_CHK_PTR_BOUNDS(dest, dmax);
-    } else {
-        CHK_DEST_OVR_CLEAR("strcat_s", destbos)
-    }
-    CHK_SRC_NULL_CLEAR("strcat_s", src)
 
     /* hold base of dest in case src was not copied */
     orig_dmax = dmax;
@@ -229,7 +220,26 @@ _strcat_s_chk (char *restrict dest, rsize_t dmax, const char *restrict src, size
     return RCNEGATE(ESNOSPC);
 }
 
+/* checked at compile-time: BOS_CHK(dest) BOS_NULL(src) */
+EXPORT errno_t
+_strcat_s_chk (char *restrict dest, rsize_t dmax, const char *restrict src,
+               size_t destbos)
+{
+    CHK_DEST_NULL("strcat_s")
+    CHK_DMAX_ZERO("strcat_s")
+    if (destbos == BOS_UNKNOWN) {
+        CHK_DMAX_MAX("strcat_s", RSIZE_MAX_STR)
+        BND_CHK_PTR_BOUNDS(dest, dmax);
+    } else {
+        CHK_DEST_OVR_CLEAR("strcat_s", destbos)
+    }
+    CHK_SRC_NULL_CLEAR("strcat_s", src)
+
+    return _strcat_s_real(dest,dmax,src);
+}
+
 #ifdef __KERNEL__
+EXPORT_SYMBOL(_strcat_s_real);
 EXPORT_SYMBOL(_strcat_s_chk);
 #endif /* __KERNEL__ */
 
