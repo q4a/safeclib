@@ -70,11 +70,11 @@
 
 #define LEN   ( 1024 * 10 )
 
-uint8_t  mem1[LEN];
-uint8_t  mem2[LEN];
+static uint8_t  mem1[LEN];
+static uint8_t  mem2[LEN];
 
 static inline clock_t rdtsc();
-static double timing_loop (uint32_t len, uint32_t loops);
+static double timing_loop (const uint32_t len, const uint32_t loops);
 int main(void);
 
 static inline clock_t rdtsc()
@@ -93,7 +93,7 @@ static inline clock_t rdtsc()
 #endif
 }
 
-static double timing_loop (uint32_t len, uint32_t loops)
+static double timing_loop (const uint32_t len, const uint32_t loops)
 {
     uint32_t i;
     size_t errors = 0;

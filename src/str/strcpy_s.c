@@ -99,9 +99,8 @@
  *    strcat_s(), strncat_s(), strncpy_s()
  */
 
-/* already checked at compile-time: BOS_CHK(dest) BOS_NULL(src) */
-EXPORT errno_t
-_strcpy_s_real (char * restrict dest, rsize_t dmax, const char * restrict src)
+static inline errno_t
+_strcpy_s_unchecked (char * restrict dest, rsize_t dmax, const char * restrict src)
 {
     /* hold base of dest in case src was not copied */
     const rsize_t orig_dmax = dmax;
@@ -182,7 +181,7 @@ _strcpy_s_real (char * restrict dest, rsize_t dmax, const char * restrict src)
     return RCNEGATE(ESNOSPC);
 }
 
-/* checked at compile-time: BOS_CHK(dest) BOS_NULL(src) */
+/* Not checked at compile-time: _BOS_KNOWN(dest) && CONSTP(dmax) */
 EXPORT errno_t
 _strcpy_s_chk (char * restrict dest, rsize_t dmax, const char * restrict src,
                const size_t destbos)
@@ -196,12 +195,19 @@ _strcpy_s_chk (char * restrict dest, rsize_t dmax, const char * restrict src,
         CHK_DEST_OVR_CLEAR("strcpy_s", destbos)
     }
 
-    return _strcpy_s_real(dest,dmax,src);
+    return _strcpy_s_unchecked(dest,dmax,src);
+}
+
+/* All but src checked at compile-time: BOS_CHK(dest) */
+EXPORT errno_t
+_strcpy_s (char * restrict dest, rsize_t dmax, const char * restrict src)
+{
+    return _strcpy_s_unchecked(dest,dmax,src);
 }
 
 #ifdef __KERNEL__
-EXPORT_SYMBOL(_strcpy_s_real);
 EXPORT_SYMBOL(_strcpy_s_chk);
+EXPORT_SYMBOL(_strcpy_s);
 #endif /* __KERNEL__ */
 
 #endif
