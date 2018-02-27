@@ -66,15 +66,17 @@
 #if defined(TEST_MSVCRT) && defined(HAVE_MEMCPY_S)
 #undef memcpy_s
 #endif
-
+#if __has_attribute(always_inline)
+# define __attribute__always_inline __attribute__((always_inline))
+#else
+# define __attribute__always_inline
+#endif
 
 #define LEN   ( 1024 * 10 )
 
-static uint8_t  mem1[LEN];
-static uint8_t  mem2[LEN];
-
 static inline clock_t rdtsc();
-static double timing_loop (const uint32_t len, const uint32_t loops);
+static double timing_loop (const uint32_t len, const uint32_t loops)
+    __attribute__always_inline;
 int main(void);
 
 static inline clock_t rdtsc()
@@ -108,6 +110,9 @@ static double timing_loop (const uint32_t len, const uint32_t loops)
     double sd_clock_dur;
     double percent;
 
+    uint8_t  mem1[LEN];
+    uint8_t  mem2[LEN];
+
     for (i=0; i<LEN; i++) { mem1[i] = 33; }
     for (i=0; i<LEN; i++) { mem2[i] = 44; }
 
@@ -123,7 +128,6 @@ static double timing_loop (const uint32_t len, const uint32_t loops)
         errors += rc;
     }
     clock_end = rdtsc();
-
     /*
      * Note that background stuff continues to run, i.e. interrupts, so
      * we need to compute average time per loop
@@ -141,11 +145,6 @@ static double timing_loop (const uint32_t len, const uint32_t loops)
         errors += *rc;
     }
     clock_end = rdtsc();
-
-    /*
-     * Note that background stuff continues to run, i.e. interrupts, so
-     * we need to compute average time per loop
-     */
     sd_clock_diff = (clock_end - clock_start) / loops;
 
     /* convert to seconds */
@@ -153,8 +152,9 @@ static double timing_loop (const uint32_t len, const uint32_t loops)
     sd_clock_dur = ((double)(sd_clock_diff) / CLOCKS_PER_SEC);
     percent      = 100*(sl_clock_dur - sd_clock_dur) / sl_clock_dur;
 
-    /* just to disable optimizing away the inner loop */
-    /* fprintf(stderr, "errors %lu\n", errors); */
+    /* ensure the inner loop is not optimized away by some super-smart compiler */
+    if (errors != 44 * loops)
+        fprintf(stderr, "errors %lu\n", errors);
     printf("%u  %u  memcpy_s %1.6f  memcpy %1.6f  diff %1.6f  %2.2f %%\n",
            loops,
            len,
