@@ -280,8 +280,8 @@ typedef unsigned long uintptr_t;
     }
 #define CHK_DMAX_MAX(func, max)                                                \
     if (unlikely(dmax > (max))) {                                              \
-        invoke_safe_str_constraint_handler(func ": dmax exceeds max",          \
-                                           (void *)dest, ESLEMAX);             \
+        size_t len = strnlen_s((char*)dest, dmax); /* min(len,dmax/destbos) */ \
+        handle_error(dest, len, func ": dmax exceeds max", ESLEMAX);           \
         return RCNEGATE(ESLEMAX);                                              \
     }
 #define CHK_DMAX_MEM_MAX(func, max)                                            \

@@ -2,8 +2,10 @@
  * safe_str_constraint.h
  *
  * October 2008, Bo Berry
+ * June 2019, Reini Urban
  *
  * Copyright (c) 2008-2011 Cisco Systems
+ * Copyright (c) 2019 Reini Urban
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -36,6 +38,7 @@
 #include "safe_str_lib.h"
 #else
 #include "safeclib_private.h"
+void mem_prim_set(void *dest, uint32_t len, uint8_t value);
 #endif
 
 /*
@@ -62,8 +65,15 @@ static inline void handle_error(char *restrict dest, const rsize_t dmax,
                                 const char *restrict err_msg,
                                 errno_t err_code) {
 #ifdef SAFECLIB_STR_NULL_SLACK
-    /* null string to eliminate partial copy */
-    memset((void *)dest, 0, dmax);
+    /* null string to eliminate partial copy. To avoid recursion errors,
+       calling only the primitives. */
+#ifdef HAVE_EXPLICIT_BZERO
+    explicit_bzero((void *)dest, dmax);
+#elif HAVE_MEMSET_S
+    memset_s((void *)dest, dmax, 0, dmax);
+#else
+    mem_prim_set((void *)dest, dmax, 0);
+#endif
     /*while (dmax) { *dest = '\0'; dmax--; dest++; }*/
 #else
     (void)dmax;
@@ -83,8 +93,15 @@ static inline void handle_error(char *restrict dest, const rsize_t dmax,
 static inline void handle_werror(wchar_t *restrict dest, const rsize_t dmax,
                                  const char *err_msg, errno_t err_code) {
 #ifdef SAFECLIB_STR_NULL_SLACK
-    /* null string to eliminate partial copy */
-    memset((void *)dest, 0, dmax * sizeof(wchar_t));
+    /* null string to eliminate partial copy. To avoid recursion errors,
+       calling only the primitives. */
+#ifdef HAVE_EXPLICIT_BZERO
+  explicit_bzero((void *)dest, dmax * sizeof(wchar_t));
+#elif HAVE_MEMSET_S
+    memset_s((void *)dest, dmax, 0, dmax * sizeof(wchar_t));
+#else
+    mem_prim_set((void *)dest, dmax * sizeof(wchar_t), 0);
+#endif
     /*while (dmax) { *dest = '\0'; dmax--; dest++; }*/
 #else
     (void)dmax;

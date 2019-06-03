@@ -95,6 +95,7 @@ int test_strcat_s(void) {
     EXPECT_BOS("dest overflow")
     rc = strcat_s(str1, (RSIZE_MAX_STR + 1), str2);
     ERR_MSVC(ESLEMAX, 0);
+    /* TODO with pgi returns "a" */
     EXPSTR(str1,
            !use_msvcrt ? "" : "aaaaa"); /* cleared, because BOS is known */
 #endif

@@ -165,24 +165,26 @@
  */
 
 /* moves (handles overlap) memory  */
-extern void mem_prim_move(void *dest, const void *src, uint32_t len);
+void mem_prim_move(void *dest, const void *src, uint32_t len);
 
 /* uint8_t moves (handles overlap) memory */
-extern void mem_prim_move8(uint8_t *dest, const uint8_t *src, uint32_t len);
+void mem_prim_move8(uint8_t *dest, const uint8_t *src, uint32_t len);
 
 /* uint16_t moves (handles overlap) memory */
-extern void mem_prim_move16(uint16_t *dest, const uint16_t *src, uint32_t len);
+void mem_prim_move16(uint16_t *dest, const uint16_t *src, uint32_t len);
 
 /* uint32_t moves (handles overlap) memory */
-extern void mem_prim_move32(uint32_t *dest, const uint32_t *src, uint32_t len);
+void mem_prim_move32(uint32_t *dest, const uint32_t *src, uint32_t len);
 
 /* set bytes */
-extern void mem_prim_set(void *dest, uint32_t len, uint8_t value);
+#ifndef __SAFE_STR_CONSTRAINT_H__
+void mem_prim_set(void *dest, uint32_t len, uint8_t value);
+#endif
 
 /* set uint16_t's */
-extern void mem_prim_set16(uint16_t *dest, uint32_t len, uint16_t value);
+void mem_prim_set16(uint16_t *dest, uint32_t len, uint16_t value);
 
 /* set uint32_t's */
-extern void mem_prim_set32(uint32_t *dest, uint32_t len, uint32_t value);
+void mem_prim_set32(uint32_t *dest, uint32_t len, uint32_t value);
 
 #endif /* __MEM_PRIMITIVES_LIB_H__ */
