@@ -44,6 +44,7 @@ Makefile.in
 *.gcda
 *.gcov
 cover_db
+/build-*
 
 #
 # Top-level generic files
